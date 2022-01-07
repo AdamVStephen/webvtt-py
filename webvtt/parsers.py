@@ -1,3 +1,4 @@
+import pdb
 import re
 import os
 import codecs
@@ -185,6 +186,7 @@ class WebVTTParser(TextBasedParser):
         caption = Caption()
         cue_timings = None
         additional_blocks = None
+        #pdb.set_trace()
 
         for line_number, line in enumerate(block.lines):
             if self._is_cue_timings_line(line):

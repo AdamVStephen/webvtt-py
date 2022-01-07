@@ -1,3 +1,4 @@
+import pdb
 import re
 
 from .errors import MalformedCaptionError
@@ -10,6 +11,7 @@ __all__ = ['Caption']
 class Caption(object):
 
     CUE_TEXT_TAGS = re.compile('<.*?>')
+    CUE_VOICE_TAG = re.compile('<v(.*?)>')
 
     """
     Represents a caption.
@@ -62,6 +64,14 @@ class Caption(object):
 
     def _clean_cue_tags(self, text):
         return re.sub(self.CUE_TEXT_TAGS, '', text)
+    
+    def _parse_voice(self, text):
+        m = self.CUE_VOICE_TAG.match(text)
+        if m:
+            #pdb.set_trace()
+            return m.group(1).strip()
+        else:
+            return "Anonymous"
 
     @property
     def start_in_seconds(self):
@@ -90,6 +100,10 @@ class Caption(object):
     @property
     def lines(self):
         return self._lines
+
+    @property
+    def voice(self):
+        return self._parse_voice(self.raw_text)
 
     @property
     def text(self):

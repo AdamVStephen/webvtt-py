@@ -1,4 +1,6 @@
+import pdb
 import os
+from collections import defaultdict
 
 from .parsers import WebVTTParser, SRTParser, SBVParser
 from .writers import WebVTTWriter, SRTWriter
@@ -26,6 +28,7 @@ class WebVTT(object):
         self.file = file
         self._captions = captions or []
         self._styles = styles
+        self._statistics = None
 
     def __len__(self):
         return len(self._captions)
@@ -41,6 +44,37 @@ class WebVTT(object):
 
     def __str__(self):
         return '\n'.join([str(c) for c in self._captions])
+
+    def parse_statistics(self):
+        if self._statistics is not None:
+            return self._statistics
+        else:
+            self._statistics = {}
+            dd = defaultdict(list)
+            for c in self._captions:
+                #pdb.set_trace()
+                duration = c.end_in_seconds - c.start_in_seconds
+                dd[c.voice].append(duration)
+            for voice in dd.keys():
+                self._statistics[voice] = {}
+                self._statistics[voice]['name'] = voice
+                self._statistics[voice]['total_duration'] = sum(dd[voice])/60.
+                self._statistics[voice]['contributions'] = len(dd[voice])
+
+    def show_statistics(self):
+        if self._statistics is None:
+            self.parse_statistics()
+        print("Contributions by duration")
+        #pdb.set_trace()
+        #for d in (sorted(self._statistics.values(), key=lambda x: x['total_duration']))
+        #pdb.set_trace()
+        for d in (sorted(self._statistics.values(), key=lambda x: x['total_duration'], reverse=True)):
+            print("%s : %3.2f : %d" % (d['name'], d['total_duration'], d['contributions']))
+        print("*"*50)
+        print("Contributions by number")
+        #pdb.set_trace()
+        for d in (sorted(self._statistics.values(), key=lambda x: x['contributions'], reverse=True)):
+            print("%s : %3.2f : %d" % (d['name'], d['total_duration'], d['contributions']))
 
     @classmethod
     def from_srt(cls, file):
